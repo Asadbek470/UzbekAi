@@ -39,27 +39,17 @@ app.post("/api/chat", async (req, res) => {
         ]
       })
     });
+const data = await response.json();
 
-    const data = await response.json();
+console.log("GROQ STATUS:", response.status);
+console.log("GROQ RESPONSE:", data);
 
-    console.log("📦 Ответ GROQ:", JSON.stringify(data, null, 2));
+if (!response.ok) {
+  return res.json({
+    reply: "Ошибка API: " + (data.error?.message || "неизвестно")
+  });
+}
 
-    if (!data.choices) {
-      return res.json({
-        reply: "Ошибка API 😢"
-      });
-    }
-
-    res.json({
-      reply: data.choices[0].message.content
-    });
-
-  } catch (error) {
-    console.error("🔥 SERVER ERROR:", error);
-    res.json({ reply: "Сервер упал 😢" });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Uzbek AI работает на порту ${PORT}`);
+res.json({
+  reply: data.choices[0].message.content
 });
