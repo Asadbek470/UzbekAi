@@ -19,10 +19,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const API_KEY = process.env.GROQ_API_KEY;
 
-// API чат
 app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
+
+    console.log("📩 Сообщение:", message);
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -33,35 +34,32 @@ app.post("/api/chat", async (req, res) => {
       body: JSON.stringify({
         model: "llama3-70b-8192",
         messages: [
-          {
-            role: "system",
-            content: "Ты Uzbek AI — мощный, умный и дружелюбный ассистент."
-          },
-          {
-            role: "user",
-            content: message
-          }
+          { role: "system", content: "Ты Uzbek AI — умный ассистент." },
+          { role: "user", content: message }
         ]
       })
     });
 
     const data = await response.json();
 
+    console.log("📦 Ответ GROQ:", JSON.stringify(data, null, 2));
+
+    if (!data.choices) {
+      return res.json({
+        reply: "Ошибка API 😢"
+      });
+    }
+
     res.json({
       reply: data.choices[0].message.content
     });
 
   } catch (error) {
-    console.error(error);
-    res.json({ reply: "Ошибка сервера 😢" });
+    console.error("🔥 SERVER ERROR:", error);
+    res.json({ reply: "Сервер упал 😢" });
   }
 });
 
-// открытие сайта
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
-
 app.listen(PORT, () => {
-  console.log(`🚀 Uzbek AI работает: http://localhost:${PORT}`);
+  console.log(`🚀 Uzbek AI работает на порту ${PORT}`);
 });
